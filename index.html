@@ -9,28 +9,42 @@ layout: null
 <title>{{ site.title }}</title>
 <meta name="description" content="{{ site.description }}">
 <style>
-  html,body{margin:0;background:#ece8e0;overflow:hidden}
-  .room{position:relative;height:100vh;height:100svh;overflow:hidden;background:#d6cfc1}
-  .room img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 45%;display:block}
-  /* 세로 화면(휴대폰): 책장이 잘리지 않게 전체를 보여주고 아래쪽에 붙임 */
-  @media (max-aspect-ratio: 1/1){
-    .room img{top:auto;bottom:0;height:auto;-webkit-mask-image:linear-gradient(transparent,#000 12%);mask-image:linear-gradient(transparent,#000 12%)}
-  }
-  section{max-width:720px;margin:0 auto;padding:56px 20px 80px;font-family:"Pretendard","Apple SD Gothic Neo","Noto Sans KR",system-ui,sans-serif;color:#3a2e25}
-  ul{list-style:none;padding:0;margin:0}
-  li{display:flex;justify-content:space-between;gap:16px;padding:12px 2px;border-bottom:1px dashed #d9cfc1}
-  li a{color:inherit;text-decoration:none}
-  li a:hover{color:#9a5a2e}
-  li time{color:#8a7a6a;font-size:13px;white-space:nowrap}
+  html,body{margin:0;background:#e0d9cc;overflow:hidden}
+  .room{height:100vh;height:100svh}
+  .room svg{display:block;width:100%;height:100%;overflow:visible}
+  .room{overflow:hidden}
+  .item{cursor:pointer}
+  .item image{transition:transform .35s ease;transform-box:fill-box;transform-origin:50% 100%}
+  .item:hover image,.item:focus image{transform:rotate(-1.2deg) scale(1.01)}
+  .item:focus{outline:none}
 </style>
 </head>
 <body>
 <div class="room">
-  <picture>
-    <source media="(max-aspect-ratio: 1/1)" srcset="{{ '/home.png' | relative_url }}">
-    <img src="{{ '/home-wide.png' | relative_url }}" alt="원목 책장과 마룻바닥" width="1971" height="1374">
-  </picture>
-</div>
+  <svg id="room" viewBox="0 0 1971 1374" preserveAspectRatio="xMidYMid slice" role="img" aria-label="원목 책장과 마룻바닥">
+    <defs><linearGradient id="fadeTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e0d9cc"/><stop offset="1" stop-color="#e0d9cc" stop-opacity="0"/></linearGradient><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs>
+    <rect x="-3000" y="-3000" width="8000" height="3300" fill="#e0d9cc"/>
+    <image href="{{ '/home-wide.png' | relative_url }}" width="1971" height="1374"/>
+    <rect id="fade" x="0" y="259" width="1971" height="55" fill="url(#fadeTop)" display="none"/>
 
+    <!-- 물주기 (방명록) -->
+    <a class="item" href="{{ '/water/' | relative_url }}" aria-label="물주기">
+      <title>물주기</title>
+      <ellipse cx="255" cy="1168" rx="100" ry="14" fill="#2a1a0e" opacity=".38" filter="url(#blur)"/>
+      <image href="{{ '/plant.png' | relative_url }}" x="100" y="408" width="312" height="760"/>
+    </a>
+  </svg>
+</div>
+<script>
+  // 세로 화면(휴대폰)에서는 책장과 화분이 잘리지 않게 보이는 범위를 조정
+  const svg = document.getElementById('room');
+  function fit(){
+    const portrait = innerWidth / innerHeight < 1;
+    svg.setAttribute('viewBox', portrait ? '60 260 1620 960' : '0 0 1971 1374');
+    svg.setAttribute('preserveAspectRatio', portrait ? 'xMidYMax meet' : 'xMidYMid slice');
+    document.getElementById('fade').setAttribute('display', portrait ? 'inline' : 'none');
+  }
+  fit(); addEventListener('resize', fit);
+</script>
 </body>
 </html>
