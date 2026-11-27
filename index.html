@@ -8,43 +8,267 @@ layout: null
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ site.title }}</title>
 <meta name="description" content="{{ site.description }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
 <style>
   html,body{margin:0;background:#e0d9cc;overflow:hidden}
-  .room{height:100vh;height:100svh}
-  .room svg{display:block;width:100%;height:100%;overflow:visible}
-  .room{overflow:hidden}
-  .item{cursor:pointer}
-  .item image{transition:transform .35s ease;transform-box:fill-box;transform-origin:50% 100%}
-  .item:hover image,.item:focus image{transform:rotate(-1.2deg) scale(1.01)}
-  .item:focus{outline:none}
+  .room{height:100vh;height:100svh;overflow:hidden}
+  .room svg{display:block;width:100%;height:100%;overflow:visible;touch-action:none;user-select:none;-webkit-user-select:none}
+
+  /* 화분 */
+  .plant{cursor:pointer}
+  .plant image{transition:transform .35s ease,filter .25s ease;transform-box:fill-box;transform-origin:50% 100%}
+  .plant:hover image{transform:rotate(-1.2deg) scale(1.01)}
+  .plant.target image{filter:drop-shadow(0 0 18px rgba(140,190,255,.95))}
+  .plant.watered image{animation:sway 1.4s ease}
+  @keyframes sway{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.8deg)}60%{transform:rotate(1.2deg)}}
+
+  /* 물조리개 */
+  .can{cursor:grab;transition:transform .45s cubic-bezier(.3,.7,.3,1)}
+  .can:hover image{filter:drop-shadow(0 6px 6px rgba(0,0,0,.18))}
+  .can.dragging{cursor:grabbing;transition:none}
+  .can.dragging image{filter:drop-shadow(0 14px 12px rgba(0,0,0,.25))}
+  .drop{fill:#8cc4ff;opacity:.85}
+
+  /* 안내 */
+  .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:rgba(58,46,37,.88);color:#fff;font:14px "Gowun Batang",serif;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* 수첩 팝업 */
+  .book{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(40,30,20,.35);opacity:0;pointer-events:none;transition:opacity .3s;z-index:10;padding:16px}
+  .book.open{opacity:1;pointer-events:auto}
+  .paper{position:relative;width:min(560px,100%);max-height:min(82vh,720px);overflow:auto;background:#fbf8f1;border-radius:6px 14px 14px 6px;
+    box-shadow:0 30px 60px -20px rgba(0,0,0,.45),inset 0 0 0 1px rgba(120,90,60,.12);
+    padding:34px 30px 30px 58px;font-family:"Gowun Batang",serif;color:#3a2e25;
+    background-image:linear-gradient(90deg,transparent 40px,rgba(214,120,110,.45) 40px,rgba(214,120,110,.45) 41.5px,transparent 41.5px),repeating-linear-gradient(#fbf8f1 0 31px,#e6dccb 31px 32px);
+    transform:translateY(18px) rotate(-.6deg);transition:transform .35s ease}
+  .book.open .paper{transform:none}
+  .rings{position:absolute;left:12px;top:26px;bottom:26px;width:16px;background:radial-gradient(circle at 8px 8px,#6b5a4a 4px,#cfc4b3 5px,transparent 6px) 0 0/16px 40px repeat-y}
+  .close{position:absolute;top:10px;right:12px;border:0;background:none;font-size:26px;line-height:1;color:#8a7a6a;cursor:pointer}
+  .paper h2{margin:0 0 18px;font-size:24px;letter-spacing:-.5px}
+  .hint{margin:0 0 18px;color:#8a7a6a;font-size:14px;line-height:1.7}
+  form{margin:0 0 22px;padding:16px;border:1px dashed #cdbfa8;border-radius:10px;background:rgba(255,255,255,.6)}
+  form .lead{margin:0 0 12px;font-size:16px}
+  form input,form textarea{width:100%;box-sizing:border-box;font:15px "Gowun Batang",serif;color:#3a2e25;border:0;border-bottom:1px solid #cdbfa8;background:transparent;padding:8px 2px;margin-bottom:10px;outline:none}
+  form textarea{resize:vertical;min-height:58px}
+  form input:focus,form textarea:focus{border-color:#9a5a2e}
+  form button{font:15px "Gowun Batang",serif;background:#9a5a2e;color:#fff;border:0;border-radius:999px;padding:9px 20px;cursor:pointer}
+  form button:disabled{opacity:.6;cursor:default}
+  ol{list-style:none;margin:0;padding:0}
+  li{padding:10px 0;border-bottom:1px dotted #d8ccb8;line-height:1.75;font-size:15px}
+  li q{display:block;margin-top:2px;color:#6b5a4a;quotes:"“" "”"}
+  li.empty{color:#8a7a6a;border:0}
+  li.new{animation:pop .6s ease}
+  @keyframes pop{from{background:rgba(140,196,255,.25)}to{background:transparent}}
 </style>
 </head>
 <body>
 <div class="room">
   <svg id="room" viewBox="0 0 1971 1374" preserveAspectRatio="xMidYMid slice" role="img" aria-label="원목 책장과 마룻바닥">
-    <defs><linearGradient id="fadeTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e0d9cc"/><stop offset="1" stop-color="#e0d9cc" stop-opacity="0"/></linearGradient><filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs>
+    <defs>
+      <linearGradient id="fadeTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e0d9cc"/><stop offset="1" stop-color="#e0d9cc" stop-opacity="0"/></linearGradient>
+      <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
+    </defs>
     <rect x="-3000" y="-3000" width="8000" height="3300" fill="#e0d9cc"/>
     <image href="{{ '/home-wide.png' | relative_url }}" width="1971" height="1374"/>
     <rect id="fade" x="0" y="259" width="1971" height="55" fill="url(#fadeTop)" display="none"/>
 
-    <!-- 물주기 (방명록) -->
-    <a class="item" href="{{ '/water/' | relative_url }}" aria-label="물주기">
-      <title>물주기</title>
+    <!-- 화분들: data-name = 수첩에 기록될 이름, data-pour = 물을 붓는 위치(x,y) -->
+    <g class="plant" data-name="폴리안" data-pour="255,1040" data-hit="85,408,420,1168">
+      <title>폴리안</title>
       <ellipse cx="255" cy="1168" rx="100" ry="14" fill="#2a1a0e" opacity=".38" filter="url(#blur)"/>
       <image href="{{ '/plant.png' | relative_url }}" x="28" y="408" width="441" height="783"/>
-    </a>
+    </g>
+
+    <g id="drops"></g>
+
+    <!-- 물조리개들 (끌어서 화분에 놓기) -->
+    <g class="can" data-x="595" data-y="1023" data-w="160" data-h="92">
+      <title>물조리개를 화분으로 끌어 보세요</title>
+      <image href="{{ '/can-blue.png' | relative_url }}" width="160" height="92"/>
+    </g>
+    <g class="can" data-x="1205" data-y="374" data-w="89" data-h="100">
+      <title>물조리개를 화분으로 끌어 보세요</title>
+      <image href="{{ '/can-steel.png' | relative_url }}" width="89" height="100"/>
+    </g>
   </svg>
 </div>
+
+<div class="toast" id="toast"></div>
+
+<div class="book" id="book" role="dialog" aria-modal="true" aria-label="물주기 수첩">
+  <div class="paper">
+    <div class="rings"></div>
+    <button class="close" id="close" aria-label="닫기">×</button>
+    <h2>물주기 수첩</h2>
+    <form id="form" hidden>
+      <p class="lead">🌿 <b id="fPlant"></b>에 물을 주었어요!</p>
+      <input id="fName" maxlength="20" placeholder="이름" required autocomplete="nickname">
+      <textarea id="fMsg" maxlength="200" placeholder="남기고 싶은 말 (안 써도 괜찮아요)"></textarea>
+      <button id="fSubmit">수첩에 적기</button>
+    </form>
+    <p class="hint" id="hint">책장의 물조리개를 화분으로 끌어다 놓으면 물을 줄 수 있어요.</p>
+    <ol id="log"><li class="empty">기록을 불러오는 중…</li></ol>
+  </div>
+</div>
+
 <script>
-  // 세로 화면(휴대폰)에서는 책장과 화분이 잘리지 않게 보이는 범위를 조정
-  const svg = document.getElementById('room');
-  function fit(){
-    const portrait = innerWidth / innerHeight < 1;
-    svg.setAttribute('viewBox', portrait ? '60 260 1620 960' : '0 0 1971 1374');
-    svg.setAttribute('preserveAspectRatio', portrait ? 'xMidYMax meet' : 'xMidYMid slice');
-    document.getElementById('fade').setAttribute('display', portrait ? 'inline' : 'none');
+/* ===== 구글 폼 / 시트 설정 ===== */
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdwnr0nIiYR809ZzMPiXRKzyyc9ewFS_l5ML-Wgz9LY8Fn1Nw/formResponse";
+const FIELD = { name: "entry.545080635", plant: "entry.1566253281", msg: "entry.835273051" };
+const SHEET_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSNh6WdCpghHpTJ79E_VazBAwdblkoX5tSzpdQxDW2L7Z1u99nrKJo3lCq3hnQ2RMXpv351ft_7HNE6/pub?gid=669197642&single=true&output=csv";
+
+const svg = document.getElementById('room');
+const $ = id => document.getElementById(id);
+
+/* ----- 화면 맞춤 (휴대폰 세로 화면) ----- */
+function fit(){
+  const portrait = innerWidth / innerHeight < 1;
+  svg.setAttribute('viewBox', portrait ? '60 260 1620 960' : '0 0 1971 1374');
+  svg.setAttribute('preserveAspectRatio', portrait ? 'xMidYMax meet' : 'xMidYMid slice');
+  $('fade').setAttribute('display', portrait ? 'inline' : 'none');
+}
+fit(); addEventListener('resize', fit);
+
+function toSVG(e){ const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM().inverse()); }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('show'), 2200); }
+
+/* ----- 화분 ----- */
+const plants = [...document.querySelectorAll('.plant')].map(el => {
+  const [x1,y1,x2,y2] = el.dataset.hit.split(',').map(Number);
+  const [px,py] = el.dataset.pour.split(',').map(Number);
+  el.addEventListener('click', () => openBook());
+  return { el, name: el.dataset.name, box:{x1,y1,x2,y2}, px, py };
+});
+const plantAt = p => plants.find(pl => p.x>=pl.box.x1 && p.x<=pl.box.x2 && p.y>=pl.box.y1 && p.y<=pl.box.y2);
+
+/* ----- 물조리개 끌기 ----- */
+document.querySelectorAll('.can').forEach(el => {
+  const c = { el, hx:+el.dataset.x, hy:+el.dataset.y, w:+el.dataset.w, h:+el.dataset.h };
+  c.x = c.hx; c.y = c.hy; place(c, 0);
+  let drag = null, target = null, moved = 0;
+  el.addEventListener('pointerdown', e => {
+    if (c.busy) return;
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    const p = toSVG(e); drag = { dx:p.x - c.x, dy:p.y - c.y, sx:e.clientX, sy:e.clientY }; moved = 0;
+    el.classList.add('dragging'); el.parentNode.appendChild(el);
+  });
+  el.addEventListener('pointermove', e => {
+    if (!drag) return;
+    moved = Math.max(moved, Math.hypot(e.clientX-drag.sx, e.clientY-drag.sy));
+    const p = toSVG(e); c.x = p.x - drag.dx; c.y = p.y - drag.dy; place(c, -8);
+    const t = plantAt(p);
+    if (t !== target){ target && target.el.classList.remove('target'); target = t; t && t.el.classList.add('target'); }
+  });
+  const end = () => {
+    if (!drag) return; drag = null; el.classList.remove('dragging');
+    if (target){ target.el.classList.remove('target'); pour(c, target); target = null; }
+    else { c.x = c.hx; c.y = c.hy; place(c, 0); if (moved < 6) toast('물조리개를 화분으로 끌어다 놓아 보세요 🌿'); }
+  };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+});
+function place(c, r){
+  c.el.style.transform = `translate(${c.x}px,${c.y}px) translate(${c.w/2}px,${c.h/2}px) rotate(${r}deg) translate(${-c.w/2}px,${-c.h/2}px)`;
+}
+function pour(c, plant){
+  c.busy = true;
+  const size = Math.max(c.w, c.h);
+  c.x = plant.px + size*0.15; c.y = plant.py - c.h - 70; place(c, -32);
+  setTimeout(() => rain(plant), 350);
+  setTimeout(() => { plant.el.classList.add('watered'); }, 900);
+  setTimeout(() => {
+    c.x = c.hx; c.y = c.hy; place(c, 0);
+    plant.el.classList.remove('watered'); c.busy = false;
+    openBook(plant.name);
+  }, 2100);
+}
+function rain(plant){
+  const g = $('drops'), NS = 'http://www.w3.org/2000/svg';
+  for (let i = 0; i < 26; i++){
+    const d = document.createElementNS(NS, 'ellipse');
+    const x = plant.px + (Math.random()-.5)*34, y0 = plant.py - 70 + Math.random()*10;
+    d.setAttribute('class','drop'); d.setAttribute('rx', 2.6); d.setAttribute('ry', 5);
+    d.setAttribute('cx', x); d.setAttribute('cy', y0); g.appendChild(d);
+    d.animate([{transform:'translate(0,0)',opacity:.9},{transform:'translate(0,70px)',opacity:0}],
+      {duration:520, delay:i*45, easing:'ease-in', fill:'forwards'}).onfinish = () => d.remove();
   }
-  fit(); addEventListener('resize', fit);
+}
+
+/* ----- 수첩 ----- */
+let entries = [], loaded = false, currentPlant = null;
+function openBook(plantName){
+  currentPlant = plantName || null;
+  $('form').hidden = !currentPlant; $('hint').hidden = !!currentPlant;
+  if (currentPlant){ $('fPlant').textContent = currentPlant; setTimeout(()=>$('fName').focus(), 350); }
+  $('book').classList.add('open');
+  if (!loaded) loadEntries();
+}
+function closeBook(){ $('book').classList.remove('open'); }
+$('close').onclick = closeBook;
+$('book').addEventListener('click', e => { if (e.target === $('book')) closeBook(); });
+addEventListener('keydown', e => { if (e.key === 'Escape') closeBook(); });
+
+function parseCSV(text){
+  const rows = []; let row = [], f = '', q = false;
+  for (let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if (q){ if (ch === '"'){ if (text[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ','){ row.push(f); f = ''; }
+    else if (ch === '\n'){ row.push(f); rows.push(row); row = []; f = ''; }
+    else if (ch !== '\r') f += ch;
+  }
+  if (f || row.length){ row.push(f); rows.push(row); }
+  return rows;
+}
+function koDate(s){
+  const m = String(s).match(/(\d{4})\D+(\d{1,2})\D+(\d{1,2})/) || String(s).match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (!m) return '';
+  return m[1].length === 4 ? `${m[1]}년 ${+m[2]}월 ${+m[3]}일` : `${m[3]}년 ${+m[1]}월 ${+m[2]}일`;
+}
+async function loadEntries(){
+  try{
+    const res = await fetch(SHEET_CSV + '&t=' + Date.now());
+    const rows = parseCSV(await res.text());
+    const head = rows.shift() || [];
+    const ix = k => head.findIndex(h => h.trim() === k);
+    const iT = ix('타임스탬프') >= 0 ? ix('타임스탬프') : 0, iN = ix('이름'), iP = ix('화분'), iM = ix('한마디');
+    const fromSheet = rows.filter(r => r[iN]).map(r => ({ date: koDate(r[iT]), name: r[iN].trim(), plant: (r[iP]||'').trim(), msg: (r[iM]||'').trim() })).reverse();
+    entries = [...entries.filter(e => e.local), ...fromSheet];
+    loaded = true;
+  }catch(err){ /* 불러오기 실패 시 빈 수첩 */ loaded = true; }
+  render();
+}
+function render(newFirst){
+  const ol = $('log'); ol.innerHTML = '';
+  if (!entries.length){ ol.innerHTML = '<li class="empty">아직 기록이 없어요. 첫 물을 주세요 🌱</li>'; return; }
+  entries.forEach((e, i) => {
+    const li = document.createElement('li');
+    if (newFirst && i === 0) li.className = 'new';
+    const line = document.createElement('span');
+    const b1 = document.createElement('b'); b1.textContent = e.name;
+    line.append(b1, ` 님이 ${e.date ? e.date + '에 ' : ''}`);
+    if (e.plant){ const b2 = document.createElement('b'); b2.textContent = e.plant; line.append(b2, '에 물 주기 했습니다.'); }
+    else line.append('물 주기 했습니다.');
+    li.append(line);
+    if (e.msg){ const qd = document.createElement('q'); qd.textContent = e.msg; li.append(qd); }
+    ol.append(li);
+  });
+}
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('fName').value.trim(), msg = $('fMsg').value.trim();
+  if (!name){ $('fName').focus(); return; }
+  $('fSubmit').disabled = true;
+  const body = new URLSearchParams({ [FIELD.name]: name, [FIELD.plant]: currentPlant, [FIELD.msg]: msg });
+  try{ await fetch(FORM_URL, { method:'POST', mode:'no-cors', body }); }catch(err){}
+  const d = new Date();
+  entries.unshift({ local:true, name, plant: currentPlant, msg, date:`${d.getFullYear()}년 ${d.getMonth()+1}월 ${d.getDate()}일` });
+  render(true);
+  $('fMsg').value = ''; $('fSubmit').disabled = false;
+  $('form').hidden = true; $('hint').hidden = false;
+  toast(`${currentPlant}에 물을 주었어요 💧`); currentPlant = null;
+});
 </script>
 </body>
 </html>
