@@ -18,19 +18,17 @@ layout: null
   /* 화분 */
   .plant{cursor:pointer}
   .plant image{transition:transform .35s ease,filter .25s ease;transform-box:fill-box;transform-origin:50% 100%}
-  .plant:hover image:not(.sh){transform:rotate(-1.2deg) scale(1.01)}
-  .plant.target image:not(.sh){filter:drop-shadow(0 0 18px rgba(140,190,255,.95))}
+  .plant:hover image{transform:rotate(-1.2deg) scale(1.01)}
+  .plant.target image{filter:drop-shadow(0 0 18px rgba(140,190,255,.95))}
   .plant.watered image{animation:sway 1.4s ease}
   @keyframes sway{0%,100%{transform:rotate(0)}25%{transform:rotate(-1.8deg)}60%{transform:rotate(1.2deg)}}
 
   /* 물조리개 */
   .can{cursor:grab;transition:transform .45s cubic-bezier(.3,.7,.3,1)}
-  .can:hover image:not(.sh){filter:drop-shadow(0 6px 6px rgba(0,0,0,.18))}
+  .can:hover image{filter:drop-shadow(0 6px 6px rgba(0,0,0,.18))}
   .can.dragging{cursor:grabbing;transition:none}
-  .can.dragging image:not(.sh){filter:drop-shadow(0 14px 12px rgba(0,0,0,.25))}
+  .can.dragging image{filter:drop-shadow(0 14px 12px rgba(0,0,0,.25))}
   .drop{fill:#8cc4ff;opacity:.85}
-  .sh{transition:opacity .2s}
-  .can.dragging .sh,.can.busy .sh{opacity:0}
 
   /* 안내 */
   .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,20px);background:rgba(58,46,37,.88);color:#fff;font:14px "Gowun Batang",serif;padding:10px 16px;border-radius:999px;opacity:0;pointer-events:none;transition:.3s}
@@ -74,12 +72,6 @@ layout: null
     <defs>
       <linearGradient id="fadeTop" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#e0d9cc"/><stop offset="1" stop-color="#e0d9cc" stop-opacity="0"/></linearGradient>
       <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9"/></filter>
-      <filter id="blur4" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="4"/></filter>
-      <!-- 사진 모양 그대로의 부드러운 그림자 -->
-      <filter id="sil" x="-30%" y="-30%" width="160%" height="160%"><feColorMatrix type="matrix" values="0 0 0 0 .18  0 0 0 0 .12  0 0 0 0 .07  0 0 0 1 0"/><feGaussianBlur stdDeviation="12"/></filter>
-      <filter id="silS" x="-30%" y="-30%" width="160%" height="160%"><feColorMatrix type="matrix" values="0 0 0 0 .18  0 0 0 0 .12  0 0 0 0 .07  0 0 0 1 0"/><feGaussianBlur stdDeviation="4"/></filter>
-      <!-- 방 조명에 맞춘 살짝 따뜻한 색감 -->
-      <filter id="warm"><feColorMatrix type="matrix" values="1 .04 0 0 0  0 .97 .02 0 0  0 0 .88 0 0  0 0 0 1 0"/></filter>
     </defs>
     <rect x="-3000" y="-3000" width="8000" height="3300" fill="#e0d9cc"/>
     <image href="{{ '/home-wide.png' | relative_url }}" width="1971" height="1374"/>
@@ -88,10 +80,8 @@ layout: null
     <!-- 화분들: data-name = 수첩에 기록될 이름, data-pour = 물을 붓는 위치(x,y) -->
     <g class="plant" data-name="폴리안" data-pour="255,1040" data-hit="85,408,420,1168">
       <title>폴리안</title>
-      <image class="sh" href="{{ '/plant.png' | relative_url }}" x="62" y="396" width="441" height="783" filter="url(#sil)" opacity=".3"/>
-      <ellipse class="sh" cx="275" cy="1162" rx="120" ry="16" fill="#2a1a0e" opacity=".32" filter="url(#blur)"/>
-      <ellipse class="sh" cx="255" cy="1167" rx="72" ry="7" fill="#1e120a" opacity=".55" filter="url(#blur4)"/>
-      <image href="{{ '/plant.png' | relative_url }}" x="28" y="408" width="441" height="783" filter="url(#warm)"/>
+      <ellipse cx="255" cy="1168" rx="100" ry="14" fill="#2a1a0e" opacity=".38" filter="url(#blur)"/>
+      <image href="{{ '/plant.png' | relative_url }}" x="28" y="408" width="441" height="783"/>
     </g>
 
     <g id="drops"></g>
@@ -99,15 +89,11 @@ layout: null
     <!-- 물조리개들 (끌어서 화분에 놓기) -->
     <g class="can" data-x="570" data-y="1004" data-w="210" data-h="121">
       <title>물조리개를 화분으로 끌어 보세요</title>
-      <image class="sh" href="{{ '/can-blue.png' | relative_url }}" x="7" y="-5" width="210" height="121" filter="url(#silS)" opacity=".35"/>
-      <ellipse class="sh" cx="146" cy="119" rx="56" ry="7" fill="#1e120a" opacity=".65" filter="url(#blur4)"/>
-      <image href="{{ '/can-blue.png' | relative_url }}" width="210" height="121" filter="url(#warm)"/>
+      <image href="{{ '/can-blue.png' | relative_url }}" width="210" height="121"/>
     </g>
     <g class="can" data-x="1205" data-y="374" data-w="89" data-h="100">
       <title>물조리개를 화분으로 끌어 보세요</title>
-      <image class="sh" href="{{ '/can-steel.png' | relative_url }}" x="8" y="-4" width="89" height="100" filter="url(#silS)" opacity=".3"/>
-      <ellipse class="sh" cx="52" cy="98" rx="30" ry="5" fill="#1e120a" opacity=".6" filter="url(#blur4)"/>
-      <image href="{{ '/can-steel.png' | relative_url }}" width="89" height="100" filter="url(#warm)"/>
+      <image href="{{ '/can-steel.png' | relative_url }}" width="89" height="100"/>
     </g>
   </svg>
 </div>
@@ -190,14 +176,14 @@ function place(c, r){
   c.el.style.transform = `translate(${c.x}px,${c.y}px) translate(${c.w/2}px,${c.h/2}px) rotate(${r}deg) translate(${-c.w/2}px,${-c.h/2}px)`;
 }
 function pour(c, plant){
-  c.busy = true; c.el.classList.add('busy');
+  c.busy = true;
   const size = Math.max(c.w, c.h);
   c.x = plant.px + size*0.15; c.y = plant.py - c.h - 70; place(c, -32);
   setTimeout(() => rain(plant), 350);
   setTimeout(() => { plant.el.classList.add('watered'); }, 900);
   setTimeout(() => {
     c.x = c.hx; c.y = c.hy; place(c, 0);
-    plant.el.classList.remove('watered'); c.busy = false; c.el.classList.remove('busy');
+    plant.el.classList.remove('watered'); c.busy = false;
     openBook(plant.name);
   }, 2100);
 }
