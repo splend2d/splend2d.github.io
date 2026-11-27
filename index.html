@@ -84,16 +84,16 @@ layout: null
       <image href="{{ '/plant.png' | relative_url }}" x="28" y="408" width="441" height="783"/>
     </g>
 
-    <g class="plant" data-name="고려담쟁이" data-pour="1124,345" data-hit="1055,313,1178,434">
+    <g class="plant" data-name="고려담쟁이" data-pour="1124,295" data-hit="1055,263,1178,384">
       <title>고려담쟁이</title>
-      <ellipse cx="1124" cy="401" rx="34" ry="4" fill="#2a1a0e" opacity=".35" filter="url(#blur)"/>
-      <image href="{{ '/ivy.png' | relative_url }}" x="1025" y="285" width="173" height="152"/>
+      <ellipse cx="1124" cy="351" rx="34" ry="4" fill="#2a1a0e" opacity=".35" filter="url(#blur)"/>
+      <image href="{{ '/ivy.png' | relative_url }}" x="1025" y="235" width="173" height="152"/>
     </g>
 
-    <g class="plant" data-name="홍콩야자" data-pour="1500,1010" data-hit="1403,745,1615,1185">
+    <g class="plant" data-name="홍콩야자" data-pour="1680,1010" data-hit="1583,745,1795,1185">
       <title>홍콩야자</title>
-      <ellipse cx="1500" cy="1185" rx="70" ry="11" fill="#2a1a0e" opacity=".38" filter="url(#blur)"/>
-      <image href="{{ '/hongkong.png' | relative_url }}" x="1358" y="689" width="289" height="513"/>
+      <ellipse cx="1680" cy="1185" rx="70" ry="11" fill="#2a1a0e" opacity=".38" filter="url(#blur)"/>
+      <image href="{{ '/hongkong.png' | relative_url }}" x="1538" y="689" width="289" height="513"/>
     </g>
 
     <g id="drops"></g>
@@ -141,7 +141,7 @@ const $ = id => document.getElementById(id);
 /* ----- 화면 맞춤 (휴대폰 세로 화면) ----- */
 function fit(){
   const portrait = innerWidth / innerHeight < 1;
-  svg.setAttribute('viewBox', portrait ? '60 260 1620 960' : '0 0 1971 1374');
+  svg.setAttribute('viewBox', portrait ? '40 220 1800 1000' : '0 0 1971 1374');
   svg.setAttribute('preserveAspectRatio', portrait ? 'xMidYMax meet' : 'xMidYMid slice');
   $('fade').setAttribute('display', portrait ? 'inline' : 'none');
 }
